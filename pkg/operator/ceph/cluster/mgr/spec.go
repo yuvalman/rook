@@ -17,8 +17,8 @@ limitations under the License.
 package mgr
 
 import (
-	"fmt"
 	_ "embed"
+	"fmt"
 	"os"
 	"strconv"
 
