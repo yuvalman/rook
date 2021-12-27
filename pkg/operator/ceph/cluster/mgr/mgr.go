@@ -56,7 +56,7 @@ var (
 	// PrometheusExternalRuleName is the name of the prometheus external rule
 	PrometheusExternalRuleName = "prometheus-ceph-vVERSION-rules-external"
 	// DefaultPrometheusRuleValuesPath path to default prometheus alerts yaml
-	DefaultPrometheusRuleValuesPath = "/etc/ceph-monitoring/template/prometheusrule-default-values.yaml"
+	DefaultPrometheusRuleValuesPath = monitoringPath + "template/prometheusrule-default-values.yaml"
 )
 
 const (
@@ -525,14 +525,6 @@ func loadTemplate(name, templateData string, p *PrometheusRuleCustomized) ([]byt
 // getComputeCustomizedPrometheus compute PrometheusRuleCustomized by merging the data that was get from env with the default data
 func getComputeCustomizedPrometheus() (*PrometheusRuleCustomized, error) {
 	var defaultPrometheusRuleVals PrometheusRuleCustomized
-	pwd, err := os.Getwd()
-	fmt.Println("pwd: " + pwd)
-	logger.Info("pwd: " + pwd)
-	fmt.Println("path: " + DefaultPrometheusRuleValuesPath)
-	logger.Infof("path: " + DefaultPrometheusRuleValuesPath)
-	fmt.Println("clean path: " + filepath.Clean(DefaultPrometheusRuleValuesPath))
-	logger.Infof("clean path: " + filepath.Clean(DefaultPrometheusRuleValuesPath))
-
 	fi, err := os.Open(filepath.Clean(DefaultPrometheusRuleValuesPath))
 	if err != nil {
 		return &PrometheusRuleCustomized{}, err
@@ -542,6 +534,7 @@ func getComputeCustomizedPrometheus() (*PrometheusRuleCustomized, error) {
 		return &PrometheusRuleCustomized{}, err
 	}
 	// merge resources from env with default values (if any)
+	fmt.Println("prom: " + os.Getenv(rookMonitoringPrometheus))
 	if prometheusRuleTemplate := os.Getenv(rookMonitoringPrometheus); prometheusRuleTemplate != "" {
 		var overwritePrometheusRuleVals PrometheusRuleCustomized
 		err = yaml.NewYAMLToJSONDecoder(strings.NewReader(prometheusRuleTemplate)).Decode(&overwritePrometheusRuleVals)
@@ -552,6 +545,7 @@ func getComputeCustomizedPrometheus() (*PrometheusRuleCustomized, error) {
 		if err != nil {
 			return &PrometheusRuleCustomized{}, err
 		}
+		fmt.Println("prometheus label: " + overwritePrometheusRuleVals.Labels.Prometheus)
 		return &overwritePrometheusRuleVals, nil
 	}
 	return &defaultPrometheusRuleVals, nil
