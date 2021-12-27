@@ -37,7 +37,15 @@ import (
 const (
 	podIPEnvVar       = "ROOK_POD_IP"
 	serviceMetricName = "http-metrics"
+	rookMonitoringPrometheus = "ROOK_CEPH_MONITORING_PROMETHEUS_RULE"
 )
+
+// Local package template path for prometheusrule
+//go:embed template/prometheusrule.yaml
+var PrometheusRuleTemplatePath string
+
+//go:embed template/prometheusrule-external.yaml
+var PrometheusRuleExternalTemplatePath string
 
 func (c *Cluster) makeDeployment(mgrConfig *mgrConfig) (*apps.Deployment, error) {
 	logger.Debugf("mgrConfig: %+v", mgrConfig)
@@ -326,10 +334,12 @@ func (c *Cluster) applyPrometheusAnnotations(objectMeta *metav1.ObjectMeta) {
 
 func (c *Cluster) cephMgrOrchestratorModuleEnvs() []v1.EnvVar {
 	operatorNamespace := os.Getenv(k8sutil.PodNamespaceEnvVar)
+	prometheusRules := os.Getenv(rookMonitoringPrometheus)
 	envVars := []v1.EnvVar{
 		{Name: "ROOK_OPERATOR_NAMESPACE", Value: operatorNamespace},
 		{Name: "ROOK_CEPH_CLUSTER_CRD_VERSION", Value: cephv1.Version},
 		{Name: "ROOK_CEPH_CLUSTER_CRD_NAME", Value: c.clusterInfo.NamespacedName().Name},
+		{Name: rookMonitoringPrometheus, Value: prometheusRules},
 		k8sutil.PodIPEnvVar(podIPEnvVar),
 	}
 	return envVars
@@ -341,4 +351,183 @@ func (c *Cluster) selectorLabels(activeDaemon string) map[string]string {
 		labels[controller.DaemonIDLabel] = activeDaemon
 	}
 	return labels
+}
+
+type PrometheusRuleCustomized struct {
+	Labels Labels `yaml:"labels"`
+	Alerts Alerts `yaml:"alerts"`
+}
+type Labels struct {
+	Prometheus string `yaml:"prometheus"`
+	Role       string `yaml:"role"`
+}
+type CephMgrIsAbsent struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephMgrIsMissingReplicas struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephMdsMissingReplicas struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephMonQuorumAtRisk struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephMonQuorumLost struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephMonHighNumberOfLeaderChanges struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type CephNodeDown struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephOSDCriticallyFull struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type CephOSDFlapping struct {
+	Limit         int    `yaml:"limit"`
+	OsdUpRate     string `yaml:"osdUpRate"`
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephOSDNearFull struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type CephOSDDiskNotResponding struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephOSDDiskUnavailable struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephOSDSlowOps struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephDataRecoveryTakingTooLong struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephPGRepairTakingTooLong struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type PersistentVolumeUsageNearFull struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type PersistentVolumeUsageCritical struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type CephClusterErrorState struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephClusterWarningState struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephOSDVersionMismatch struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephMonVersionMismatch struct {
+	For           string `yaml:"for"`
+	SeverityLevel string `yaml:"severityLevel"`
+	Severity      string `yaml:"severity"`
+}
+type CephClusterNearFull struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type CephClusterCriticallyFull struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type CephClusterReadOnly struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type CephPoolQuotaBytesNearExhaustion struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type CephPoolQuotaBytesCriticallyExhausted struct {
+	Limit         float64 `yaml:"limit"`
+	For           string  `yaml:"for"`
+	SeverityLevel string  `yaml:"severityLevel"`
+	Severity      string  `yaml:"severity"`
+}
+type Alerts struct {
+	CephMgrIsAbsent                       CephMgrIsAbsent                       `yaml:"cephMgrIsAbsent"`
+	CephMgrIsMissingReplicas              CephMgrIsMissingReplicas              `yaml:"cephMgrIsMissingReplicas"`
+	CephMdsMissingReplicas                CephMdsMissingReplicas                `yaml:"cephMdsMissingReplicas"`
+	CephMonQuorumAtRisk                   CephMonQuorumAtRisk                   `yaml:"cephMonQuorumAtRisk"`
+	CephMonQuorumLost                     CephMonQuorumLost                     `yaml:"cephMonQuorumLost"`
+	CephMonHighNumberOfLeaderChanges      CephMonHighNumberOfLeaderChanges      `yaml:"cephMonHighNumberOfLeaderChanges"`
+	CephNodeDown                          CephNodeDown                          `yaml:"cephNodeDown"`
+	CephOSDCriticallyFull                 CephOSDCriticallyFull                 `yaml:"cephOSDCriticallyFull"`
+	CephOSDFlapping                       CephOSDFlapping                       `yaml:"cephOSDFlapping"`
+	CephOSDNearFull                       CephOSDNearFull                       `yaml:"cephOSDNearFull"`
+	CephOSDDiskNotResponding              CephOSDDiskNotResponding              `yaml:"cephOSDDiskNotResponding"`
+	CephOSDDiskUnavailable                CephOSDDiskUnavailable                `yaml:"cephOSDDiskUnavailable"`
+	CephOSDSlowOps                        CephOSDSlowOps                        `yaml:"cephOSDSlowOps"`
+	CephDataRecoveryTakingTooLong         CephDataRecoveryTakingTooLong         `yaml:"cephDataRecoveryTakingTooLong"`
+	CephPGRepairTakingTooLong             CephPGRepairTakingTooLong             `yaml:"cephPGRepairTakingTooLong"`
+	PersistentVolumeUsageNearFull         PersistentVolumeUsageNearFull         `yaml:"PersistentVolumeUsageNearFull"`
+	PersistentVolumeUsageCritical         PersistentVolumeUsageCritical         `yaml:"PersistentVolumeUsageCritical"`
+	CephClusterErrorState                 CephClusterErrorState                 `yaml:"cephClusterErrorState"`
+	CephClusterWarningState               CephClusterWarningState               `yaml:"cephClusterWarningState"`
+	CephOSDVersionMismatch                CephOSDVersionMismatch                `yaml:"cephOSDVersionMismatch"`
+	CephMonVersionMismatch                CephMonVersionMismatch                `yaml:"cephMonVersionMismatch"`
+	CephClusterNearFull                   CephClusterNearFull                   `yaml:"cephClusterNearFull"`
+	CephClusterCriticallyFull             CephClusterCriticallyFull             `yaml:"cephClusterCriticallyFull"`
+	CephClusterReadOnly                   CephClusterReadOnly                   `yaml:"cephClusterReadOnly"`
+	CephPoolQuotaBytesNearExhaustion      CephPoolQuotaBytesNearExhaustion      `yaml:"cephPoolQuotaBytesNearExhaustion"`
+	CephPoolQuotaBytesCriticallyExhausted CephPoolQuotaBytesCriticallyExhausted `yaml:"cephPoolQuotaBytesCriticallyExhausted"`
 }
