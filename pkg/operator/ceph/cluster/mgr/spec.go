@@ -42,10 +42,10 @@ const (
 )
 
 // Local package template path for prometheusrule
-//go:embed template/prometheusrule.yaml
+//go:embed /etc/ceph-monitoring/template/prometheusrule.yaml
 var PrometheusRuleTemplatePath string
 
-//go:embed template/prometheusrule-external.yaml
+//go:embed /etc/ceph-monitoring/template/prometheusrule-external.yaml
 var PrometheusRuleExternalTemplatePath string
 
 func (c *Cluster) makeDeployment(mgrConfig *mgrConfig) (*apps.Deployment, error) {
