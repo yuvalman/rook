@@ -35,8 +35,8 @@ import (
 )
 
 const (
-	podIPEnvVar       = "ROOK_POD_IP"
-	serviceMetricName = "http-metrics"
+	podIPEnvVar              = "ROOK_POD_IP"
+	serviceMetricName        = "http-metrics"
 	rookMonitoringPrometheus = "ROOK_CEPH_MONITORING_PROMETHEUS_RULE"
 )
 
