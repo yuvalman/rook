@@ -18,6 +18,7 @@ package mgr
 
 import (
 	"fmt"
+	_ "embed"
 	"os"
 	"strconv"
 
