@@ -288,7 +288,7 @@ spec:
 {{- end }}
 {{- if .Values.monitoring.prometheusRule }}
         - name: ROOK_CEPH_MONITORING_PROMETHEUS_RULE
-          value: {{ .Values.monitoring.prometheusRule | quote }}
+          value: {{ .Values.monitoring.prometheusRule | toYaml | quote }}
 {{- end }}
 {{- if .Values.csi.csiCephFSPluginResource }}
         - name: CSI_CEPHFS_PLUGIN_RESOURCE
