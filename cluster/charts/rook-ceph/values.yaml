@@ -54,6 +54,8 @@ pspEnable: true
 
 ## Settings for whether to disable the drivers or other daemons if they are not
 ## needed
+monitoring:
+  enabled: true
 csi:
   enableRbdDriver: true
   enableCephfsDriver: true
