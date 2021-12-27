@@ -56,7 +56,7 @@ var (
 	// PrometheusExternalRuleName is the name of the prometheus external rule
 	PrometheusExternalRuleName = "prometheus-ceph-vVERSION-rules-external"
 	// DefaultPrometheusRuleValuesPath path to default prometheus alerts yaml
-	DefaultPrometheusRuleValuesPath = "template/prometheusrule-default-values.yaml"
+	DefaultPrometheusRuleValuesPath = "/etc/ceph-monitoring/template/prometheusrule-default-values.yaml"
 )
 
 const (
