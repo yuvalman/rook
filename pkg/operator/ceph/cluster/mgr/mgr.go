@@ -525,6 +525,14 @@ func loadTemplate(name, templateData string, p *PrometheusRuleCustomized) ([]byt
 // getComputeCustomizedPrometheus compute PrometheusRuleCustomized by merging the data that was get from env with the default data
 func getComputeCustomizedPrometheus() (*PrometheusRuleCustomized, error) {
 	var defaultPrometheusRuleVals PrometheusRuleCustomized
+	pwd, err := os.Getwd()
+	fmt.Println("pwd: " + pwd)
+	logger.Info("pwd: " + pwd)
+	fmt.Println("path: " + DefaultPrometheusRuleValuesPath)
+	logger.Infof("path: " + DefaultPrometheusRuleValuesPath)
+	fmt.Println("clean path: " + filepath.Clean(DefaultPrometheusRuleValuesPath))
+	logger.Infof("clean path: " + filepath.Clean(DefaultPrometheusRuleValuesPath))
+
 	fi, err := os.Open(filepath.Clean(DefaultPrometheusRuleValuesPath))
 	if err != nil {
 		return &PrometheusRuleCustomized{}, err
