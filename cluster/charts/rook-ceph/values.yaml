@@ -56,7 +56,7 @@ pspEnable: true
 ## needed
 monitoring:
   enabled: true
-  prometheusRules: {}
+  prometheusRule: {}
 csi:
   enableRbdDriver: true
   enableCephfsDriver: true
