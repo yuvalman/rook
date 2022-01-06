@@ -309,88 +309,94 @@ type MonitoringSpec struct {
 //PrometheusRuleCustomized keep customized alerts
 type PrometheusRuleCustomized struct {
 	// +optional
-	Alerts Alerts `json:"alerts"`
+	Alerts Alerts `json:"alerts,omitempty"`
 }
 
 //Alerts All prometheus alerts
 type Alerts struct {
 	// +optional
-	CephMgrIsAbsent CephNamespacedAlert `json:"cephMgrIsAbsent"`
+	CephMgrIsAbsent CephNamespacedAlert `json:"cephMgrIsAbsent,omitempty"`
 	// +optional
-	CephMgrIsMissingReplicas CephAlert `json:"cephMgrIsMissingReplicas"`
+	CephMgrIsMissingReplicas CephAlert `json:"cephMgrIsMissingReplicas,omitempty"`
 	// +optional
-	CephMdsMissingReplicas CephAlert `json:"cephMdsMissingReplicas"`
+	CephMdsMissingReplicas CephAlert `json:"cephMdsMissingReplicas,omitempty"`
 	// +optional
-	CephMonQuorumAtRisk CephAlert `json:"cephMonQuorumAtRisk"`
+	CephMonQuorumAtRisk CephAlert `json:"cephMonQuorumAtRisk,omitempty"`
 	// +optional
-	CephMonQuorumLost CephAlert `json:"cephMonQuorumLost"`
+	CephMonQuorumLost CephAlert `json:"cephMonQuorumLost,omitempty"`
 	// +optional
-	CephMonHighNumberOfLeaderChanges CephLimitAlert `json:"cephMonHighNumberOfLeaderChanges"`
+	CephMonHighNumberOfLeaderChanges CephLimitAlert `json:"cephMonHighNumberOfLeaderChanges,omitempty"`
 	// +optional
-	CephNodeDown CephAlert `json:"cephNodeDown"`
+	CephNodeDown CephAlert `json:"cephNodeDown,omitempty"`
 	// +optional
-	CephOSDCriticallyFull CephLimitAlert `json:"cephOSDCriticallyFull"`
+	CephOSDCriticallyFull CephLimitAlert `json:"cephOSDCriticallyFull,omitempty"`
 	// +optional
-	CephOSDFlapping CephOsdUpRateAlert `json:"cephOSDFlapping"`
+	CephOSDFlapping CephOsdUpRateAlert `json:"cephOSDFlapping,omitempty"`
 	// +optional
-	CephOSDNearFull CephLimitAlert `json:"cephOSDNearFull"`
+	CephOSDNearFull CephLimitAlert `json:"cephOSDNearFull,omitempty"`
 	// +optional
-	CephOSDDiskNotResponding CephAlert `json:"cephOSDDiskNotResponding"`
+	CephOSDDiskNotResponding CephAlert `json:"cephOSDDiskNotResponding,omitempty"`
 	// +optional
-	CephOSDDiskUnavailable CephAlert `json:"cephOSDDiskUnavailable"`
+	CephOSDDiskUnavailable CephAlert `json:"cephOSDDiskUnavailable,omitempty"`
 	// +optional
 	CephOSDSlowOps CephAlert `json:"cephOSDSlowOps"`
 	// +optional
-	CephDataRecoveryTakingTooLong CephAlert `json:"cephDataRecoveryTakingTooLong"`
+	CephDataRecoveryTakingTooLong CephAlert `json:"cephDataRecoveryTakingTooLong,omitempty"`
 	// +optional
-	CephPGRepairTakingTooLong CephAlert `json:"cephPGRepairTakingTooLong"`
+	CephPGRepairTakingTooLong CephAlert `json:"cephPGRepairTakingTooLong,omitempty"`
 	// +optional
-	PersistentVolumeUsageNearFull CephLimitAlert `json:"PersistentVolumeUsageNearFull"`
+	PersistentVolumeUsageNearFull CephLimitAlert `json:"PersistentVolumeUsageNearFull,omitempty"`
 	// +optional
-	PersistentVolumeUsageCritical CephLimitAlert `json:"PersistentVolumeUsageCritical"`
+	PersistentVolumeUsageCritical CephLimitAlert `json:"PersistentVolumeUsageCritical,omitempty"`
 	// +optional
-	CephClusterErrorState CephAlert `json:"cephClusterErrorState"`
+	CephClusterErrorState CephAlert `json:"cephClusterErrorState,omitempty"`
 	// +optional
-	CephClusterWarningState CephAlert `json:"cephClusterWarningState"`
+	CephClusterWarningState CephAlert `json:"cephClusterWarningState,omitempty"`
 	// +optional
-	CephOSDVersionMismatch CephAlert `json:"cephOSDVersionMismatch"`
+	CephOSDVersionMismatch CephAlert `json:"cephOSDVersionMismatch,omitempty"`
 	// +optional
-	CephMonVersionMismatch CephAlert `json:"cephMonVersionMismatch"`
+	CephMonVersionMismatch CephAlert `json:"cephMonVersionMismatch,omitempty"`
 	// +optional
-	CephClusterNearFull CephLimitAlert `json:"cephClusterNearFull"`
+	CephClusterNearFull CephLimitAlert `json:"cephClusterNearFull,omitempty"`
 	// +optional
-	CephClusterCriticallyFull CephLimitAlert `json:"cephClusterCriticallyFull"`
+	CephClusterCriticallyFull CephLimitAlert `json:"cephClusterCriticallyFull,omitempty"`
 	// +optional
-	CephClusterReadOnly CephLimitAlert `json:"cephClusterReadOnly"`
+	CephClusterReadOnly CephLimitAlert `json:"cephClusterReadOnly,omitempty"`
 	// +optional
-	CephPoolQuotaBytesNearExhaustion CephLimitAlert `json:"cephPoolQuotaBytesNearExhaustion"`
+	CephPoolQuotaBytesNearExhaustion CephLimitAlert `json:"cephPoolQuotaBytesNearExhaustion,omitempty"`
 	// +optional
-	CephPoolQuotaBytesCriticallyExhausted CephLimitAlert `json:"cephPoolQuotaBytesCriticallyExhausted"`
+	CephPoolQuotaBytesCriticallyExhausted CephLimitAlert `json:"cephPoolQuotaBytesCriticallyExhausted,omitempty"`
 }
 
 //CephAlert basic customized alert
 type CephAlert struct {
-	For           string `json:"for"`
-	SeverityLevel string `json:"severityLevel"`
-	Severity      string `json:"severity"`
+	// +optional
+	For           string `json:"for,omitempty"`
+	// +optional
+	SeverityLevel string `json:"severityLevel,omitempty"`
+	// +optional
+	Severity      string `json:"severity,omitempty"`
 }
 
 //CephLimitAlert limit customized alert
 type CephLimitAlert struct {
 	CephAlert `json:",inline"`
-	Limit     int `json:"limit"`
+	// +optional
+	Limit     int `json:"limit,omitempty"`
 }
 
 //CephNamespacedAlert namespace customized alert
 type CephNamespacedAlert struct {
 	CephAlert `json:",inline"`
-	Namespace string `json:"namespace"`
+	// +optional
+	Namespace string `json:"namespace,omitempty"`
 }
 
 //CephOsdUpRateAlert osdUpRate customized alert
 type CephOsdUpRateAlert struct {
 	CephLimitAlert `json:",inline"`
-	OsdUpRate      string `json:"osdUpRate"`
+	// +optional
+	OsdUpRate      string `json:"osdUpRate,omitempty"`
 }
 
 // ClusterStatus represents the status of a Ceph cluster
