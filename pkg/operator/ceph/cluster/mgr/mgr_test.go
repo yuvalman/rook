@@ -19,8 +19,10 @@ package mgr
 import (
 	"context"
 	"fmt"
+	"github.com/rook/rook/pkg/util"
 	"io/ioutil"
 	"os"
+	"path"
 	"testing"
 
 	cephv1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1"
@@ -326,4 +328,48 @@ func TestMgrDaemons(t *testing.T) {
 	require.Equal(t, 2, len(daemons))
 	assert.Equal(t, "a", daemons[0])
 	assert.Equal(t, "b", daemons[1])
+}
+
+
+
+func TestPrometheusRuleTemplate(t *testing.T) {
+	clusterSpec := cephv1.ClusterSpec{
+	}
+	c := &Cluster{spec: clusterSpec}
+	projectRoot := util.PathToProjectRoot()
+	monitoringPath = path.Join(projectRoot, "cluster/examples/kubernetes/ceph/monitoring/")
+	t.Run("default prometheus rule created successfully from template", func(t *testing.T) {
+		pr, err := c.templateToPrometheusRule("name", PrometheusRuleTemplatePath)
+		assert.NoError(t, err)
+	out:
+		for _, g := range pr.Spec.Groups {
+			if g.Name == "ceph-mgr-status" {
+				for _, r := range g.Rules {
+					if r.Alert == "CephMgrIsAbsent" {
+						assert.Equal(t, r.For, "5m")
+						assert.Contains(t, r.Expr.StrVal, "rook-ceph")
+						break out
+					}
+				}
+			}
+		}
+	})
+	t.Run("overwrite prometheus rule created successfully from template", func(t *testing.T) {
+		prCustomized := cephv1.PrometheusRuleCustomized{Alerts: cephv1.Alerts{CephMgrIsAbsent: cephv1.CephNamespacedAlert{CephAlert: cephv1.CephAlert{For: "1m"}, Namespace: "test-ns"}}}
+		c.spec.Monitoring.CustomizedPrometheus = &prCustomized
+		pr, err := c.templateToPrometheusRule("name", PrometheusRuleTemplatePath)
+		assert.NoError(t, err)
+	out:
+		for _, g := range pr.Spec.Groups {
+			if g.Name == "ceph-mgr-status" {
+				for _, r := range g.Rules {
+					if r.Alert == "CephMgrIsAbsent" {
+						assert.Equal(t, r.For, "1m")
+						assert.Contains(t, r.Expr.StrVal, "test-ns")
+						break out
+					}
+				}
+			}
+		}
+	})
 }

@@ -41,12 +41,7 @@ const (
 	rookMonitoringPrometheus = "ROOK_CEPH_MONITORING_PROMETHEUS_RULE"
 )
 
-// Local package template path for prometheusrule
-//go:embed template/prometheusrule.yaml
-var PrometheusRuleTemplatePath string
 
-//go:embed template/prometheusrule-external.yaml
-var PrometheusRuleExternalTemplatePath string
 
 func (c *Cluster) makeDeployment(mgrConfig *mgrConfig) (*apps.Deployment, error) {
 	logger.Debugf("mgrConfig: %+v", mgrConfig)

@@ -55,21 +55,28 @@ var (
 
 	// PrometheusExternalRuleName is the name of the prometheus external rule
 	PrometheusExternalRuleName = "prometheus-ceph-vVERSION-rules-external"
-	// DefaultPrometheusRuleValuesPath path to default prometheus alerts yaml
-	DefaultPrometheusRuleValuesPath = monitoringPath + "template/prometheusrule-default-values.yaml"
+	monitoringPath             = "/etc/ceph-monitoring/"
+
+	// PrometheusRuleTemplatePath Local package template path for prometheusrule
+	//go:embed template/prometheusrule.yaml
+	PrometheusRuleTemplatePath string
+
+	// PrometheusRuleExternalTemplatePath Local package template path for prometheusrule-external
+	//go:embed template/prometheusrule-external.yaml
+	PrometheusRuleExternalTemplatePath string
 )
 
 const (
-	AppName                = "rook-ceph-mgr"
-	serviceAccountName     = "rook-ceph-mgr"
-	maxMgrCount            = 2
-	PrometheusModuleName   = "prometheus"
-	crashModuleName        = "crash"
-	PgautoscalerModuleName = "pg_autoscaler"
-	balancerModuleName     = "balancer"
-	balancerModuleMode     = "upmap"
-	monitoringPath         = "/etc/ceph-monitoring/"
-	serviceMonitorFile     = "service-monitor.yaml"
+	AppName                   = "rook-ceph-mgr"
+	serviceAccountName        = "rook-ceph-mgr"
+	maxMgrCount               = 2
+	PrometheusModuleName      = "prometheus"
+	crashModuleName           = "crash"
+	PgautoscalerModuleName    = "pg_autoscaler"
+	balancerModuleName        = "balancer"
+	balancerModuleMode        = "upmap"
+	serviceMonitorFile        = "service-monitor.yaml"
+	defaultPrometheusRuleFile = "prometheusrule-default-values.yaml"
 	// minimum amount of memory in MB to run the pod
 	cephMgrPodMinimumMemory uint64 = 512
 	// DefaultMetricsPort prometheus exporter port
@@ -477,9 +484,9 @@ func (c *Cluster) DeployPrometheusRule(name, namespace string) error {
 	if strings.Contains(name, "external") {
 		path = PrometheusRuleExternalTemplatePath
 	}
-	prometheusRule, err := templateToPrometheusRule(name, path)
+	prometheusRule, err := c.templateToPrometheusRule(name, path)
 	if err != nil {
-		return errors.Wrap(err, "failed to load prometheusrule template")
+		return errors.Wrap(err, "failed to template prometheus rule")
 	}
 	prometheusRule.SetName(name)
 	prometheusRule.SetNamespace(namespace)
@@ -494,24 +501,24 @@ func (c *Cluster) DeployPrometheusRule(name, namespace string) error {
 	return nil
 }
 
-func templateToPrometheusRule(name, templateData string) (*monitoringv1.PrometheusRule, error) {
+func (c *Cluster) templateToPrometheusRule(name, templateData string) (*monitoringv1.PrometheusRule, error) {
 	var rule monitoringv1.PrometheusRule
-	customPrometheusRule, err := getComputeCustomizedPrometheus()
+	customPrometheusRule, err := c.getComputeCustomizedPrometheus()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load prometheusrule template")
+		return nil, errors.Wrap(err, "failed to compute customized prometheus rule")
 	}
 	t, err := loadTemplate(name, templateData, customPrometheusRule)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load prometheusrule template")
+		return nil, errors.Wrap(err, "failed to load prometheus rule template")
 	}
 	err = yaml.Unmarshal(t, &rule)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load prometheusrule template")
+		return nil, err
 	}
 	return &rule, nil
 }
 
-func loadTemplate(name, templateData string, p *PrometheusRuleCustomized) ([]byte, error) {
+func loadTemplate(name, templateData string, p *cephv1.PrometheusRuleCustomized) ([]byte, error) {
 	var writer bytes.Buffer
 	t := template.New(name)
 	t, err := t.Parse(templateData)
@@ -523,30 +530,24 @@ func loadTemplate(name, templateData string, p *PrometheusRuleCustomized) ([]byt
 }
 
 // getComputeCustomizedPrometheus compute PrometheusRuleCustomized by merging the data that was get from env with the default data
-func getComputeCustomizedPrometheus() (*PrometheusRuleCustomized, error) {
-	var defaultPrometheusRuleVals PrometheusRuleCustomized
-	fi, err := os.Open(filepath.Clean(DefaultPrometheusRuleValuesPath))
+func (c *Cluster) getComputeCustomizedPrometheus() (*cephv1.PrometheusRuleCustomized, error) {
+	var defaultPrometheusRuleVals cephv1.PrometheusRuleCustomized
+	fi, err := os.Open(filepath.Clean(path.Join(monitoringPath, defaultPrometheusRuleFile)))
 	if err != nil {
-		return &PrometheusRuleCustomized{}, err
+		return nil, err
 	}
 	err = yaml.NewYAMLToJSONDecoder(fi).Decode(&defaultPrometheusRuleVals)
 	if err != nil {
-		return &PrometheusRuleCustomized{}, err
+		return nil, err
 	}
 	// merge resources from env with default values (if any)
-	fmt.Println("prom: " + os.Getenv(rookMonitoringPrometheus))
-	if prometheusRuleTemplate := os.Getenv(rookMonitoringPrometheus); prometheusRuleTemplate != "" {
-		var overwritePrometheusRuleVals PrometheusRuleCustomized
-		err = yaml.NewYAMLToJSONDecoder(strings.NewReader(prometheusRuleTemplate)).Decode(&overwritePrometheusRuleVals)
+	customRule := c.spec.Monitoring.CustomizedPrometheus
+	if customRule != nil {
+		err = mergo.Merge(&defaultPrometheusRuleVals, customRule, mergo.WithOverride)
 		if err != nil {
-			return &PrometheusRuleCustomized{}, err
+			return nil, err
 		}
-		err = mergo.Merge(&overwritePrometheusRuleVals, defaultPrometheusRuleVals)
-		if err != nil {
-			return &PrometheusRuleCustomized{}, err
-		}
-		fmt.Println("prometheus label: " + overwritePrometheusRuleVals.Labels.Prometheus)
-		return &overwritePrometheusRuleVals, nil
+		return &defaultPrometheusRuleVals, nil
 	}
 	return &defaultPrometheusRuleVals, nil
 }

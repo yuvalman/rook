@@ -10,6 +10,7 @@ spec:
   groups:
   - name: persistent-volume-alert.rules
     rules:
+    {{- with .Alerts }}
     - alert: PersistentVolumeUsageNearFull
       annotations:
         description: PVC `{{`{{`}} $labels.persistentvolumeclaim {{`}}`}}` utilization has crossed
@@ -19,7 +20,7 @@ spec:
         severity_level: {{ .PersistentVolumeUsageNearFull.SeverityLevel }}
         storage_type: ceph
       expr: |
-        (kubelet_volume_stats_used_bytes * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)"})) / (kubelet_volume_stats_capacity_bytes * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)"})) > {{ .PersistentVolumeUsageNearFull.Limit }}
+        (kubelet_volume_stats_used_bytes * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)"})) / (kubelet_volume_stats_capacity_bytes * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)"})) > 0.{{ .PersistentVolumeUsageNearFull.Limit }}
       for: {{ .PersistentVolumeUsageNearFull.For }}
       labels:
         severity: {{ .PersistentVolumeUsageNearFull.Severity }}
@@ -32,121 +33,8 @@ spec:
         severity_level: {{ .PersistentVolumeUsageCritical.SeverityLevel }}
         storage_type: ceph
       expr: |
-        (kubelet_volume_stats_used_bytes * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)"})) / (kubelet_volume_stats_capacity_bytes * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)"})) > {{ .PersistentVolumeUsageCritical.Limit }}
+        (kubelet_volume_stats_used_bytes * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)"})) / (kubelet_volume_stats_capacity_bytes * on (namespace,persistentvolumeclaim) group_left(storageclass, provisioner) (kube_persistentvolumeclaim_info * on (storageclass)  group_left(provisioner) kube_storageclass_info {provisioner=~"(.*rbd.csi.ceph.com)|(.*cephfs.csi.ceph.com)"})) > 0.{{ .PersistentVolumeUsageCritical.Limit }}
       for: {{ .PersistentVolumeUsageCritical.For }}
       labels:
         severity: {{ .PersistentVolumeUsageCritical.Severity }}
-  - name: cluster-state-alert.rules
-    rules:
-    - alert: CephClusterErrorState
-      annotations:
-        description: Storage cluster is in error state for more than 10m.
-        message: Storage cluster is in error state
-        severity_level: {{ .CephClusterErrorState.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        ceph_health_status{job="rook-ceph-mgr"} > 1
-      for: {{ .CephClusterErrorState.For }}
-      labels:
-        severity: {{ .CephClusterErrorState.Severity }}
-    - alert: CephClusterWarningState
-      annotations:
-        description: Storage cluster is in warning state for more than 10m.
-        message: Storage cluster is in degraded state
-        severity_level: {{ .CephClusterWarningState.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        ceph_health_status{job="rook-ceph-mgr"} == 1
-      for: {{ .CephClusterWarningState.For }}
-      labels:
-        severity: {{ .CephClusterWarningState.Severity }}
-    - alert: CephOSDVersionMismatch
-      annotations:
-        description: There are `{{`{{`}} $value {{`}}`}}` different versions of Ceph OSD components
-          running.
-        message: There are multiple versions of storage services running.
-        severity_level: {{ .CephOSDVersionMismatch.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        count(count(ceph_osd_metadata{job="rook-ceph-mgr"}) by (ceph_version, namespace)) by (ceph_version, namespace) > 1
-      for: {{ .CephOSDVersionMismatch.For }}
-      labels:
-        severity: {{ .CephOSDVersionMismatch.Severity }}
-    - alert: CephMonVersionMismatch
-      annotations:
-        description: There are `{{`{{`}} $value {{`}}`}}` different versions of Ceph Mon components
-          running.
-        message: There are multiple versions of storage services running.
-        severity_level: {{ .CephMonVersionMismatch.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        count(count(ceph_mon_metadata{job="rook-ceph-mgr", ceph_version != ""}) by (ceph_version)) > 1
-      for: {{ .CephMonVersionMismatch.For }}
-      labels:
-        severity: {{ .CephMonVersionMismatch.Severity }}
-  - name: cluster-utilization-alert.rules
-    rules:
-    - alert: CephClusterNearFull
-      annotations:
-        description: Storage cluster utilization has crossed {{ .CephClusterNearFull.Limit }}% and will become read-only
-          at 85%. Free up some space or expand the storage cluster.
-        message: Storage cluster is nearing full. Data deletion or cluster expansion
-          is required.
-        severity_level: {{ .CephClusterNearFull.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        ceph_cluster_total_used_raw_bytes / ceph_cluster_total_bytes > {{ .CephClusterNearFull.Limit }}
-      for: {{ .CephClusterNearFull.For }}
-      labels:
-        severity: {{ .CephClusterNearFull.Severity }}
-    - alert: CephClusterCriticallyFull
-      annotations:
-        description: Storage cluster utilization has crossed {{ .CephClusterCriticallyFull.Limit }}% and will become read-only
-          at 85%. Free up some space or expand the storage cluster immediately.
-        message: Storage cluster is critically full and needs immediate data deletion
-          or cluster expansion.
-        severity_level: {{ .CephClusterCriticallyFull.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        ceph_cluster_total_used_raw_bytes / ceph_cluster_total_bytes > {{ .CephClusterCriticallyFull.Limit }}
-      for: {{ .CephClusterCriticallyFull.For }}
-      labels:
-        severity: {{ .CephClusterCriticallyFull.Severity }}
-    - alert: CephClusterReadOnly
-      annotations:
-        description: Storage cluster utilization has crossed 85% and will become read-only
-          now. Free up some space or expand the storage cluster immediately.
-        message: Storage cluster is read-only now and needs immediate data deletion
-          or cluster expansion.
-        severity_level: {{ .CephClusterReadOnly.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        ceph_cluster_total_used_raw_bytes / ceph_cluster_total_bytes >= {{ .CephClusterReadOnly.Limit }}
-      for: {{ .CephClusterReadOnly.For }}
-      labels:
-        severity: {{ .CephClusterReadOnly.Severity }}
-  - name: pool-quota.rules
-    rules:
-    - alert: CephPoolQuotaBytesNearExhaustion
-      annotations:
-        description: Storage pool `{{`{{`}} $labels.name {{`}}`}}` quota usage has crossed {{ .CephPoolQuotaBytesNearExhaustion.Limit }}%.
-        message: Storage pool quota(bytes) is near exhaustion.
-        severity_level: {{ .CephPoolQuotaBytesNearExhaustion.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        (ceph_pool_stored_raw * on (pool_id) group_left(name)ceph_pool_metadata) / ((ceph_pool_quota_bytes * on (pool_id) group_left(name)ceph_pool_metadata) > 0) > {{ .CephPoolQuotaBytesNearExhaustion.Limit }}
-      for: {{ .CephPoolQuotaBytesNearExhaustion.For }}
-      labels:
-        severity: {{ .CephPoolQuotaBytesNearExhaustion.Severity }}
-    - alert: CephPoolQuotaBytesCriticallyExhausted
-      annotations:
-        description: Storage pool `{{`{{`}} $labels.name {{`}}`}}` quota usage has crossed {{ .CephPoolQuotaBytesCriticallyExhausted.Limit }}%.
-        message: Storage pool quota(bytes) is critically exhausted.
-        severity_level: {{ .CephPoolQuotaBytesCriticallyExhausted.SeverityLevel }}
-        storage_type: ceph
-      expr: |
-        (ceph_pool_stored_raw * on (pool_id) group_left(name)ceph_pool_metadata) / ((ceph_pool_quota_bytes * on (pool_id) group_left(name)ceph_pool_metadata) > 0) > {{ .CephPoolQuotaBytesCriticallyExhausted.Limit }}
-      for: {{ .CephPoolQuotaBytesCriticallyExhausted.For }}
-      labels:
-        severity: {{ .CephPoolQuotaBytesCriticallyExhausted.Severity }}
     {{- end }}

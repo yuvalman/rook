@@ -1,9 +1,7 @@
-labels:
-  prometheus: rook-prometheus
-  role: alert-rules
 alerts:
   cephMgrIsAbsent:
     for: 5m
+    namespace: rook-ceph
     severityLevel: critical
     severity: critical
   cephMgrIsMissingReplicas:
@@ -23,7 +21,7 @@ alerts:
     severityLevel: critical
     severity: critical
   cephMonHighNumberOfLeaderChanges:
-    limit: 0.95
+    limit: 95
     for: 5m
     severityLevel: warning
     severity: warning
@@ -32,18 +30,18 @@ alerts:
     severityLevel: error
     severity: critical
   cephOSDCriticallyFull:
-    limit: 0.80
+    limit: 80
     for: 40s
     severityLevel: error
     severity: critical
   cephOSDFlapping:
-    limit: 5
+    limit: 10
     osdUpRate: 5m
     for: 0s
     severityLevel: error
     severity: critical
   cephOSDNearFull:
-    limit: 0.75
+    limit: 75
     for: 40s
     severityLevel: warning
     severity: warning
@@ -68,12 +66,12 @@ alerts:
     severityLevel: warning
     severity: warning
   PersistentVolumeUsageNearFull:
-    limit: 0.75
+    limit: 75
     for: 5s
     severityLevel: warning
     severity: warning
   PersistentVolumeUsageCritical:
-    limit: 0.85
+    limit: 85
     for: 5s
     severityLevel: error
     severity: critical
@@ -94,27 +92,27 @@ alerts:
     severityLevel: warning
     severity: warning
   cephClusterNearFull:
-    limit: 0.75
+    limit: 75
     for: 5s
     severityLevel: warning
     severity: warning
   cephClusterCriticallyFull:
-    limit: 0.80
+    limit: 80
     for: 5s
     severityLevel: error
     severity: critical
   cephClusterReadOnly:
-    limit: 0.85
+    limit: 85
     for: 0s
     severityLevel: error
     severity: critical
   cephPoolQuotaBytesNearExhaustion:
-    limit: 0.70
+    limit: 70
     for: 1m
     severityLevel: warning
     severity: warning
   cephPoolQuotaBytesCriticallyExhausted:
-    limit: 0.90
+    limit: 90
     for: 1m
     severityLevel: critical
     severity: critical

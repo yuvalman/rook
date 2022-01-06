@@ -1197,6 +1197,418 @@ spec:
                       maximum: 65535
                       minimum: 0
                       type: integer
+                    prometheusRule:
+                      description: CustomizedPrometheus points to a customized Ceph prometheus alerts
+                      nullable: true
+                      properties:
+                        alerts:
+                          description: Alerts All prometheus alerts
+                          properties:
+                            PersistentVolumeUsageCritical:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            PersistentVolumeUsageNearFull:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephClusterCriticallyFull:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephClusterErrorState:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephClusterNearFull:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephClusterReadOnly:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephClusterWarningState:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephDataRecoveryTakingTooLong:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephMdsMissingReplicas:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephMgrIsAbsent:
+                              description: CephNamespacedAlert namespace customized alert
+                              properties:
+                                for:
+                                  type: string
+                                namespace:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - namespace
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephMgrIsMissingReplicas:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephMonHighNumberOfLeaderChanges:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephMonQuorumAtRisk:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephMonQuorumLost:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephMonVersionMismatch:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephNodeDown:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephOSDCriticallyFull:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephOSDDiskNotResponding:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephOSDDiskUnavailable:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephOSDFlapping:
+                              description: CephOsdUpRateAlert osdUpRate customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                osdUpRate:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - osdUpRate
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephOSDNearFull:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephOSDSlowOps:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephOSDVersionMismatch:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephPGRepairTakingTooLong:
+                              description: CephAlert basic customized alert
+                              properties:
+                                for:
+                                  type: string
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephPoolQuotaBytesCriticallyExhausted:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                            cephPoolQuotaBytesNearExhaustion:
+                              description: CephLimitAlert limit customized alert
+                              properties:
+                                for:
+                                  type: string
+                                limit:
+                                  type: integer
+                                severity:
+                                  type: string
+                                severityLevel:
+                                  type: string
+                              required:
+                                - for
+                                - limit
+                                - severity
+                                - severityLevel
+                              type: object
+                          type: object
+                      type: object
                     rulesNamespace:
                       description: RulesNamespace is the namespace where the prometheus rules and alerts should be created. If empty, the same namespace as the cluster will be used.
                       type: string
