@@ -544,11 +544,15 @@ func (c *Cluster) getComputeCustomizedPrometheus() (*cephv1.PrometheusRuleCustom
 	}
 	// merge resources from env with default values (if any)
 	customRule := c.spec.Monitoring.CustomizedPrometheus
+	fmt.Println("custom:")
+	fmt.Println(customRule)
 	if customRule != nil {
 		err = mergo.Merge(&defaultPrometheusRuleVals, customRule, mergo.WithOverride)
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("merge:")
+		fmt.Println(defaultPrometheusRuleVals)
 	}
 	return &defaultPrometheusRuleVals, nil
 }
