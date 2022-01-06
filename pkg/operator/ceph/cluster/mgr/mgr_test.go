@@ -330,11 +330,8 @@ func TestMgrDaemons(t *testing.T) {
 	assert.Equal(t, "b", daemons[1])
 }
 
-
-
 func TestPrometheusRuleTemplate(t *testing.T) {
-	clusterSpec := cephv1.ClusterSpec{
-	}
+	clusterSpec := cephv1.ClusterSpec{}
 	c := &Cluster{spec: clusterSpec}
 	projectRoot := util.PathToProjectRoot()
 	monitoringPath = path.Join(projectRoot, "cluster/examples/kubernetes/ceph/monitoring/")

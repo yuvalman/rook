@@ -36,11 +36,9 @@ import (
 )
 
 const (
-	podIPEnvVar              = "ROOK_POD_IP"
-	serviceMetricName        = "http-metrics"
+	podIPEnvVar       = "ROOK_POD_IP"
+	serviceMetricName = "http-metrics"
 )
-
-
 
 func (c *Cluster) makeDeployment(mgrConfig *mgrConfig) (*apps.Deployment, error) {
 	logger.Debugf("mgrConfig: %+v", mgrConfig)
