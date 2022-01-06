@@ -537,6 +537,8 @@ func (c *Cluster) getComputeCustomizedPrometheus() (*cephv1.PrometheusRuleCustom
 		return nil, err
 	}
 	err = yaml.NewYAMLToJSONDecoder(fi).Decode(&defaultPrometheusRuleVals)
+	fmt.Println("defaults")
+	fmt.Println(defaultPrometheusRuleVals)
 	if err != nil {
 		return nil, err
 	}
@@ -547,7 +549,6 @@ func (c *Cluster) getComputeCustomizedPrometheus() (*cephv1.PrometheusRuleCustom
 		if err != nil {
 			return nil, err
 		}
-		return &defaultPrometheusRuleVals, nil
 	}
 	return &defaultPrometheusRuleVals, nil
 }
