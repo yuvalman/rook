@@ -10,7 +10,7 @@ spec:
   groups:
   - name: persistent-volume-alert.rules
     rules:
-    {{- with .Alerts }}
+    {{- if not .PersistentVolumeUsageNearFull.Disabled }}
     - alert: PersistentVolumeUsageNearFull
       annotations:
         description: PVC `{{`{{`}} $labels.persistentvolumeclaim {{`}}`}}` utilization has crossed
@@ -24,6 +24,8 @@ spec:
       for: {{ .PersistentVolumeUsageNearFull.For }}
       labels:
         severity: {{ .PersistentVolumeUsageNearFull.Severity }}
+    {{- end }}
+    {{- if not .PersistentVolumeUsageCritical.Disabled }}
     - alert: PersistentVolumeUsageCritical
       annotations:
         description: PVC `{{`{{`}} $labels.persistentvolumeclaim {{`}}`}}` utilization has crossed

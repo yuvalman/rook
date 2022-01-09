@@ -338,35 +338,73 @@ func TestPrometheusRuleTemplate(t *testing.T) {
 	t.Run("default prometheus rule created successfully from template", func(t *testing.T) {
 		pr, err := c.templateToPrometheusRule("name", PrometheusRuleTemplatePath)
 		assert.NoError(t, err)
-	out:
+		assert.NotNil(t, pr.Spec.Groups)
 		for _, g := range pr.Spec.Groups {
+			assert.NotNil(t, g.Rules)
 			if g.Name == "ceph-mgr-status" {
+				foundAlert := false
 				for _, r := range g.Rules {
 					if r.Alert == "CephMgrIsAbsent" {
 						assert.Equal(t, r.For, "5m")
 						assert.Contains(t, r.Expr.StrVal, "rook-ceph")
-						break out
+						assert.Equal(t, r.Labels["severity"], "critical")
+					}
+					if r.Alert == "CephMgrIsMissingReplicas" {
+						foundAlert = true
+					}
+				}
+				assert.Equal(t, foundAlert, true)
+			}
+			if g.Name == "osd-alert.rules" {
+				for _, r := range g.Rules {
+					if r.Alert == "CephOSDNearFull" {
+						assert.Contains(t, r.Expr.StrVal, "0.75")
+					}
+					if r.Alert == "CephOSDFlapping" {
+						assert.Contains(t, r.Expr.StrVal, "[5m]")
 					}
 				}
 			}
 		}
 	})
 	t.Run("overwrite prometheus rule created successfully from template", func(t *testing.T) {
-		prCustomized := cephv1.PrometheusRuleCustomized{Alerts: cephv1.Alerts{CephMgrIsAbsent: cephv1.CephNamespacedAlert{CephAlert: cephv1.CephAlert{For: "1m"}, Namespace: "test-ns"}}}
-		c.spec.Monitoring.CustomizedPrometheus = &prCustomized
+		alertCustomized := cephv1.Alerts{
+			CephMgrIsMissingReplicas: cephv1.CephAlert{Disabled: true, For: "1m"},
+			CephMgrIsAbsent:          cephv1.CephNamespacedAlert{CephAlert: cephv1.CephAlert{For: "1m"}, Namespace: "test-ns"},
+			CephOSDNearFull:          cephv1.CephLimitAlert{Limit: 80},
+			CephOSDFlapping:          cephv1.CephOsdUpRateAlert{OsdUpRate: "10m"},
+		}
+		c.spec.Monitoring.AlertRuleOverrides = &alertCustomized
 		pr, err := c.templateToPrometheusRule("name", PrometheusRuleTemplatePath)
 		assert.NoError(t, err)
-	out:
+		assert.NotNil(t, pr.Spec.Groups)
 		for _, g := range pr.Spec.Groups {
+			assert.NotNil(t, g.Rules)
 			if g.Name == "ceph-mgr-status" {
+				foundAlert := false
 				for _, r := range g.Rules {
 					if r.Alert == "CephMgrIsAbsent" {
 						assert.Equal(t, r.For, "1m")
 						assert.Contains(t, r.Expr.StrVal, "test-ns")
-						break out
+						assert.Equal(t, r.Labels["severity"], "critical")
+					}
+					if r.Alert == "CephMgrIsMissingReplicas" {
+						foundAlert = true
+					}
+				}
+				assert.Equal(t, foundAlert, false)
+			}
+			if g.Name == "osd-alert.rules" {
+				for _, r := range g.Rules {
+					if r.Alert == "CephOSDNearFull" {
+						assert.Contains(t, r.Expr.StrVal, "0.80")
+					}
+					if r.Alert == "CephOSDFlapping" {
+						assert.Contains(t, r.Expr.StrVal, "[10m]")
 					}
 				}
 			}
+
 		}
 	})
 }

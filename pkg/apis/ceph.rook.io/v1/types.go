@@ -300,16 +300,10 @@ type MonitoringSpec struct {
 	// +kubebuilder:validation:Maximum=65535
 	// +optional
 	ExternalMgrPrometheusPort uint16 `json:"externalMgrPrometheusPort,omitempty"`
-	// CustomizedPrometheus points to a customized Ceph prometheus alerts
+	// AlertRuleOverrides points to a customized Ceph prometheus alerts
 	// +optional
 	// +nullable
-	CustomizedPrometheus *PrometheusRuleCustomized `json:"prometheusRule,omitempty"`
-}
-
-//PrometheusRuleCustomized keep customized alerts
-type PrometheusRuleCustomized struct {
-	// +optional
-	Alerts Alerts `json:"alerts,omitempty"`
+	AlertRuleOverrides *Alerts `json:"alertRuleOverrides,omitempty"`
 }
 
 //Alerts All prometheus alerts
@@ -371,18 +365,20 @@ type Alerts struct {
 //CephAlert basic customized alert
 type CephAlert struct {
 	// +optional
-	For           string `json:"for,omitempty"`
+	Disabled bool `json:"disabled,omitempty"`
+	// +optional
+	For string `json:"for,omitempty"`
 	// +optional
 	SeverityLevel string `json:"severityLevel,omitempty"`
 	// +optional
-	Severity      string `json:"severity,omitempty"`
+	Severity string `json:"severity,omitempty"`
 }
 
 //CephLimitAlert limit customized alert
 type CephLimitAlert struct {
 	CephAlert `json:",inline"`
 	// +optional
-	Limit     int `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
 }
 
 //CephNamespacedAlert namespace customized alert
@@ -396,7 +392,7 @@ type CephNamespacedAlert struct {
 type CephOsdUpRateAlert struct {
 	CephLimitAlert `json:",inline"`
 	// +optional
-	OsdUpRate      string `json:"osdUpRate,omitempty"`
+	OsdUpRate string `json:"osdUpRate,omitempty"`
 }
 
 // ClusterStatus represents the status of a Ceph cluster

@@ -35,7 +35,7 @@ spec:
       record: job:ceph_versions_running:count
   - name: ceph-mgr-status
     rules:
-    {{- with .Alerts }}
+    {{- if not .CephMgrIsAbsent.Disabled }}
     - alert: CephMgrIsAbsent
       annotations:
         description: Ceph Manager has disappeared from Prometheus target discovery.
@@ -47,6 +47,8 @@ spec:
       for: {{ .CephMgrIsAbsent.For }}
       labels:
         severity: {{ .CephMgrIsAbsent.Severity }}
+    {{- end }}
+    {{- if not .CephMgrIsMissingReplicas.Disabled }}
     - alert: CephMgrIsMissingReplicas
       annotations:
         description: Ceph Manager is missing replicas.
@@ -58,8 +60,10 @@ spec:
       for: {{ .CephMgrIsMissingReplicas.For }}
       labels:
         severity: {{ .CephMgrIsMissingReplicas.Severity }}
+    {{- end }}
   - name: ceph-mds-status
     rules:
+    {{- if not .CephMdsMissingReplicas.Disabled }}
     - alert: CephMdsMissingReplicas
       annotations:
         description: Minimum required replicas for storage metadata service not available. Might affect the working of storage cluster.
@@ -71,8 +75,10 @@ spec:
       for: {{ .CephMdsMissingReplicas.For }}
       labels:
         severity: {{ .CephMdsMissingReplicas.Severity }}
+    {{- end }}
   - name: quorum-alert.rules
     rules:
+    {{- if not .CephMonQuorumAtRisk.Disabled }}
     - alert: CephMonQuorumAtRisk
       annotations:
         description: Storage cluster quorum is low. Contact Support.
@@ -84,6 +90,8 @@ spec:
       for: {{ .CephMonQuorumAtRisk.For }}
       labels:
         severity: {{ .CephMonQuorumAtRisk.Severity }}
+    {{- end }}
+    {{- if not .CephMonQuorumLost.Disabled }}
     - alert: CephMonQuorumLost
       annotations:
         description: Storage cluster quorum is lost. Contact Support.
@@ -95,6 +103,8 @@ spec:
       for: {{ .CephMonQuorumLost.For }}
       labels:
         severity: {{ .CephMonQuorumLost.Severity }}
+    {{- end }}
+    {{- if not .CephMonHighNumberOfLeaderChanges.Disabled }}
     - alert: CephMonHighNumberOfLeaderChanges
       annotations:
         description: Ceph Monitor `{{`{{`}} $labels.ceph_daemon {{`}}`}}` on host `{{`{{`}} $labels.hostname {{`}}`}}` has seen `{{`{{`}} $value {{`}}`}}` | printf "%.2f" }} leader changes per minute recently.
@@ -106,8 +116,10 @@ spec:
       for: {{ .CephMonHighNumberOfLeaderChanges.For }}
       labels:
         severity: {{ .CephMonHighNumberOfLeaderChanges.Severity }}
+    {{- end }}
   - name: ceph-node-alert.rules
     rules:
+    {{- if not .CephNodeDown.Disabled }}
     - alert: CephNodeDown
       annotations:
         description: Storage node `{{`{{`}} $labels.node {{`}}`}}` went down. Please check the node
@@ -120,8 +132,10 @@ spec:
       for: {{ .CephNodeDown.For }}
       labels:
         severity: {{ .CephNodeDown.Severity }}
+    {{- end }}
   - name: osd-alert.rules
     rules:
+    {{- if not .CephOSDCriticallyFull.Disabled }}
     - alert: CephOSDCriticallyFull
       annotations:
         description: Utilization of storage device `{{`{{`}} $labels.ceph_daemon {{`}}`}}` of device_class
@@ -134,6 +148,8 @@ spec:
       for: {{ .CephOSDCriticallyFull.For }}
       labels:
         severity: {{ .CephOSDCriticallyFull.Severity }}
+    {{- end }}
+    {{- if not .CephOSDFlapping.Disabled }}
     - alert: CephOSDFlapping
       annotations:
         description: Storage daemon `{{`{{`}} $labels.ceph_daemon {{`}}`}}` has restarted {{ .CephOSDFlapping.Limit }} times
@@ -147,6 +163,8 @@ spec:
       for: {{ .CephOSDFlapping.For }}
       labels:
         severity: {{ .CephOSDFlapping.Severity }}
+    {{- end }}
+    {{- if not .CephOSDNearFull.Disabled }}
     - alert: CephOSDNearFull
       annotations:
         description: Utilization of storage device `{{`{{`}} $labels.ceph_daemon {{`}}`}}` of device_class
@@ -159,6 +177,8 @@ spec:
       for: {{ .CephOSDNearFull.For }}
       labels:
         severity: {{ .CephOSDNearFull.Severity }}
+    {{- end }}
+    {{- if not .CephOSDDiskNotResponding.Disabled }}
     - alert: CephOSDDiskNotResponding
       annotations:
         description: Disk device `{{`{{`}} $labels.device {{`}}`}}` not responding, on host `{{`{{`}} $labels.host {{`}}`}}`.
@@ -170,6 +190,8 @@ spec:
       for: {{ .CephOSDDiskNotResponding.For }}
       labels:
         severity: {{ .CephOSDDiskNotResponding.Severity }}
+    {{- end }}
+    {{- if not .CephOSDDiskUnavailable.Disabled }}
     - alert: CephOSDDiskUnavailable
       annotations:
         description: Disk device `{{`{{`}} $labels.device {{`}}`}}` not accessible on host `{{`{{`}} $labels.host {{`}}`}}`.
@@ -181,6 +203,8 @@ spec:
       for: {{ .CephOSDDiskUnavailable.For }}
       labels:
         severity: {{ .CephOSDDiskUnavailable.Severity }}
+    {{- end }}
+    {{- if not .CephOSDSlowOps.Disabled }}
     - alert: CephOSDSlowOps
       annotations:
         description: '`{{`{{`}} $value {{`}}`}}` Ceph OSD requests are taking too long to process.
@@ -193,6 +217,8 @@ spec:
       for: {{ .CephOSDSlowOps.For }}
       labels:
         severity: {{ .CephOSDSlowOps.Severity }}
+    {{- end }}
+    {{- if not .CephDataRecoveryTakingTooLong.Disabled }}
     - alert: CephDataRecoveryTakingTooLong
       annotations:
         description: Data recovery has been active for too long. Contact Support.
@@ -204,6 +230,8 @@ spec:
       for: {{ .CephDataRecoveryTakingTooLong.For }}
       labels:
         severity: {{ .CephDataRecoveryTakingTooLong.Severity }}
+    {{- end }}
+    {{- if not .CephPGRepairTakingTooLong.Disabled }}
     - alert: CephPGRepairTakingTooLong
       annotations:
         description: Self heal operations taking too long. Contact Support.
@@ -215,8 +243,10 @@ spec:
       for: {{ .CephPGRepairTakingTooLong.For }}
       labels:
         severity: {{ .CephPGRepairTakingTooLong.Severity }}
+    {{- end }}
   - name: persistent-volume-alert.rules
     rules:
+    {{- if not .PersistentVolumeUsageNearFull.Disabled }}
     - alert: PersistentVolumeUsageNearFull
       annotations:
         description: PVC `{{`{{`}} $labels.persistentvolumeclaim {{`}}`}}` utilization has crossed
@@ -230,6 +260,8 @@ spec:
       for: {{ .PersistentVolumeUsageNearFull.For }}
       labels:
         severity: {{ .PersistentVolumeUsageNearFull.Severity }}
+    {{- end }}
+    {{- if not .PersistentVolumeUsageCritical.Disabled }}
     - alert: PersistentVolumeUsageCritical
       annotations:
         description: PVC `{{`{{`}} $labels.persistentvolumeclaim {{`}}`}}` utilization has crossed
@@ -243,8 +275,10 @@ spec:
       for: {{ .PersistentVolumeUsageCritical.For }}
       labels:
         severity: {{ .PersistentVolumeUsageCritical.Severity }}
+    {{- end }}
   - name: cluster-state-alert.rules
     rules:
+    {{- if not .CephClusterErrorState.Disabled }}
     - alert: CephClusterErrorState
       annotations:
         description: Storage cluster is in error state for more than {{ .CephClusterErrorState.For }}.
@@ -256,6 +290,8 @@ spec:
       for: {{ .CephClusterErrorState.For }}
       labels:
         severity: {{ .CephClusterErrorState.Severity }}
+    {{- end }}
+    {{- if not .CephClusterWarningState.Disabled }}
     - alert: CephClusterWarningState
       annotations:
         description: Storage cluster is in warning state for more than {{ .CephClusterWarningState.For }}.
@@ -267,6 +303,8 @@ spec:
       for: {{ .CephClusterWarningState.For }}
       labels:
         severity: {{ .CephClusterWarningState.Severity }}
+    {{- end }}
+    {{- if not .CephOSDVersionMismatch.Disabled }}
     - alert: CephOSDVersionMismatch
       annotations:
         description: There are `{{`{{`}} $value {{`}}`}}` different versions of Ceph OSD components
@@ -279,6 +317,8 @@ spec:
       for: {{ .CephOSDVersionMismatch.For }}
       labels:
         severity: {{ .CephOSDVersionMismatch.Severity }}
+    {{- end }}
+    {{- if not .CephMonVersionMismatch.Disabled }}
     - alert: CephMonVersionMismatch
       annotations:
         description: There are `{{`{{`}} $value {{`}}`}}` different versions of Ceph Mon components
@@ -291,8 +331,10 @@ spec:
       for: {{ .CephMonVersionMismatch.For }}
       labels:
         severity: {{ .CephMonVersionMismatch.Severity }}
+    {{- end }}
   - name: cluster-utilization-alert.rules
     rules:
+    {{- if not .CephClusterNearFull.Disabled }}
     - alert: CephClusterNearFull
       annotations:
         description: Storage cluster utilization has crossed {{ .CephClusterNearFull.Limit }}% and will become read-only
@@ -306,6 +348,8 @@ spec:
       for: {{ .CephClusterNearFull.For }}
       labels:
         severity: {{ .CephClusterNearFull.Severity }}
+    {{- end }}
+    {{- if not .CephClusterCriticallyFull.Disabled }}
     - alert: CephClusterCriticallyFull
       annotations:
         description: Storage cluster utilization has crossed {{ .CephClusterCriticallyFull.Limit }}% and will become read-only
@@ -319,6 +363,8 @@ spec:
       for: {{ .CephClusterCriticallyFull.For }}
       labels:
         severity: {{ .CephClusterCriticallyFull.Severity }}
+    {{- end }}
+    {{- if not .CephClusterReadOnly.Disabled }}
     - alert: CephClusterReadOnly
       annotations:
         description: Storage cluster utilization has crossed 85% and will become read-only
@@ -332,8 +378,10 @@ spec:
       for: {{ .CephClusterReadOnly.For }}
       labels:
         severity: {{ .CephClusterReadOnly.Severity }}
+    {{- end }}
   - name: pool-quota.rules
     rules:
+    {{- if not .CephPoolQuotaBytesNearExhaustion.Disabled }}
     - alert: CephPoolQuotaBytesNearExhaustion
       annotations:
         description: Storage pool `{{`{{`}} $labels.name {{`}}`}}` quota usage has crossed {{ .CephPoolQuotaBytesNearExhaustion.Limit }}%.
@@ -345,6 +393,8 @@ spec:
       for: {{ .CephPoolQuotaBytesNearExhaustion.For }}
       labels:
         severity: {{ .CephPoolQuotaBytesNearExhaustion.Severity }}
+    {{- end }}
+    {{- if not .CephPoolQuotaBytesCriticallyExhausted.Disabled }}
     - alert: CephPoolQuotaBytesCriticallyExhausted
       annotations:
         description: Storage pool `{{`{{`}} $labels.name {{`}}`}}` quota usage has crossed {{ .CephPoolQuotaBytesCriticallyExhausted.Limit }}%.

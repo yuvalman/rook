@@ -480,11 +480,11 @@ func (c *Cluster) EnableServiceMonitor(activeDaemon string) error {
 func (c *Cluster) DeployPrometheusRule(name, namespace string) error {
 	version := strconv.Itoa(c.clusterInfo.CephVersion.Major)
 	name = strings.Replace(name, "VERSION", version, 1)
-	path := PrometheusRuleTemplatePath
+	templatePath := PrometheusRuleTemplatePath
 	if strings.Contains(name, "external") {
-		path = PrometheusRuleExternalTemplatePath
+		templatePath = PrometheusRuleExternalTemplatePath
 	}
-	prometheusRule, err := c.templateToPrometheusRule(name, path)
+	prometheusRule, err := c.templateToPrometheusRule(name, templatePath)
 	if err != nil {
 		return errors.Wrap(err, "failed to template prometheus rule")
 	}
@@ -503,7 +503,7 @@ func (c *Cluster) DeployPrometheusRule(name, namespace string) error {
 
 func (c *Cluster) templateToPrometheusRule(name, templateData string) (*monitoringv1.PrometheusRule, error) {
 	var rule monitoringv1.PrometheusRule
-	customPrometheusRule, err := c.getComputeCustomizedPrometheus()
+	customPrometheusRule, err := c.computeCustomizedPrometheusAlerts()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to compute customized prometheus rule")
 	}
@@ -518,7 +518,7 @@ func (c *Cluster) templateToPrometheusRule(name, templateData string) (*monitori
 	return &rule, nil
 }
 
-func loadTemplate(name, templateData string, p *cephv1.PrometheusRuleCustomized) ([]byte, error) {
+func loadTemplate(name, templateData string, p *cephv1.Alerts) ([]byte, error) {
 	var writer bytes.Buffer
 	t := template.New(name)
 	t, err := t.Parse(templateData)
@@ -529,32 +529,25 @@ func loadTemplate(name, templateData string, p *cephv1.PrometheusRuleCustomized)
 	return writer.Bytes(), err
 }
 
-// getComputeCustomizedPrometheus compute PrometheusRuleCustomized by merging the data that was get from env with the default data
-func (c *Cluster) getComputeCustomizedPrometheus() (*cephv1.PrometheusRuleCustomized, error) {
-	var defaultPrometheusRuleVals cephv1.PrometheusRuleCustomized
+// computeCustomizedPrometheusAlerts compute Alerts by merging the data that was get from cephcluster spec with the default data
+func (c *Cluster) computeCustomizedPrometheusAlerts() (*cephv1.Alerts, error) {
+	var defaultAlerts cephv1.Alerts
 	fi, err := os.Open(filepath.Clean(path.Join(monitoringPath, defaultPrometheusRuleFile)))
 	if err != nil {
 		return nil, err
 	}
-	err = yaml.NewYAMLToJSONDecoder(fi).Decode(&defaultPrometheusRuleVals)
-	fmt.Println("defaults")
-	fmt.Println(defaultPrometheusRuleVals)
+	err = yaml.NewYAMLToJSONDecoder(fi).Decode(&defaultAlerts)
 	if err != nil {
 		return nil, err
 	}
-	// merge resources from env with default values (if any)
-	customRule := c.spec.Monitoring.CustomizedPrometheus
-	fmt.Println("custom:")
-	fmt.Println(customRule)
-	if customRule != nil {
-		err = mergo.Merge(&defaultPrometheusRuleVals, customRule, mergo.WithOverride)
+	// merge custom alerts values from with default values (if any)
+	if c.spec.Monitoring.AlertRuleOverrides != nil {
+		err = mergo.Merge(&defaultAlerts, c.spec.Monitoring.AlertRuleOverrides, mergo.WithOverride)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("merge:")
-		fmt.Println(defaultPrometheusRuleVals)
 	}
-	return &defaultPrometheusRuleVals, nil
+	return &defaultAlerts, nil
 }
 
 // IsModuleInSpec returns whether a module is present in the CephCluster manager spec
