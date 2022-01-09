@@ -339,9 +339,9 @@ type Alerts struct {
 	// +optional
 	CephPGRepairTakingTooLong CephAlert `json:"cephPGRepairTakingTooLong,omitempty"`
 	// +optional
-	PersistentVolumeUsageNearFull CephLimitAlert `json:"PersistentVolumeUsageNearFull,omitempty"`
+	PersistentVolumeUsageNearFull CephLimitAlert `json:"persistentVolumeUsageNearFull,omitempty"`
 	// +optional
-	PersistentVolumeUsageCritical CephLimitAlert `json:"PersistentVolumeUsageCritical,omitempty"`
+	PersistentVolumeUsageCritical CephLimitAlert `json:"persistentVolumeUsageCritical,omitempty"`
 	// +optional
 	CephClusterErrorState CephAlert `json:"cephClusterErrorState,omitempty"`
 	// +optional
