@@ -303,63 +303,8 @@ type MonitoringSpec struct {
 	// AlertRuleOverrides points to a customized Ceph prometheus alerts
 	// +optional
 	// +nullable
-	AlertRuleOverrides *Alerts `json:"alertRuleOverrides,omitempty"`
-}
-
-//Alerts All prometheus alerts
-type Alerts struct {
-	// +optional
-	CephMgrIsAbsent CephNamespacedAlert `json:"cephMgrIsAbsent,omitempty"`
-	// +optional
-	CephMgrIsMissingReplicas CephAlert `json:"cephMgrIsMissingReplicas,omitempty"`
-	// +optional
-	CephMdsMissingReplicas CephAlert `json:"cephMdsMissingReplicas,omitempty"`
-	// +optional
-	CephMonQuorumAtRisk CephAlert `json:"cephMonQuorumAtRisk,omitempty"`
-	// +optional
-	CephMonQuorumLost CephAlert `json:"cephMonQuorumLost,omitempty"`
-	// +optional
-	CephMonHighNumberOfLeaderChanges CephLimitAlert `json:"cephMonHighNumberOfLeaderChanges,omitempty"`
-	// +optional
-	CephNodeDown CephAlert `json:"cephNodeDown,omitempty"`
-	// +optional
-	CephOSDCriticallyFull CephLimitAlert `json:"cephOSDCriticallyFull,omitempty"`
-	// +optional
-	CephOSDFlapping CephOsdUpRateAlert `json:"cephOSDFlapping,omitempty"`
-	// +optional
-	CephOSDNearFull CephLimitAlert `json:"cephOSDNearFull,omitempty"`
-	// +optional
-	CephOSDDiskNotResponding CephAlert `json:"cephOSDDiskNotResponding,omitempty"`
-	// +optional
-	CephOSDDiskUnavailable CephAlert `json:"cephOSDDiskUnavailable,omitempty"`
-	// +optional
-	CephOSDSlowOps CephAlert `json:"cephOSDSlowOps"`
-	// +optional
-	CephDataRecoveryTakingTooLong CephAlert `json:"cephDataRecoveryTakingTooLong,omitempty"`
-	// +optional
-	CephPGRepairTakingTooLong CephAlert `json:"cephPGRepairTakingTooLong,omitempty"`
-	// +optional
-	PersistentVolumeUsageNearFull CephLimitAlert `json:"persistentVolumeUsageNearFull,omitempty"`
-	// +optional
-	PersistentVolumeUsageCritical CephLimitAlert `json:"persistentVolumeUsageCritical,omitempty"`
-	// +optional
-	CephClusterErrorState CephAlert `json:"cephClusterErrorState,omitempty"`
-	// +optional
-	CephClusterWarningState CephAlert `json:"cephClusterWarningState,omitempty"`
-	// +optional
-	CephOSDVersionMismatch CephAlert `json:"cephOSDVersionMismatch,omitempty"`
-	// +optional
-	CephMonVersionMismatch CephAlert `json:"cephMonVersionMismatch,omitempty"`
-	// +optional
-	CephClusterNearFull CephLimitAlert `json:"cephClusterNearFull,omitempty"`
-	// +optional
-	CephClusterCriticallyFull CephLimitAlert `json:"cephClusterCriticallyFull,omitempty"`
-	// +optional
-	CephClusterReadOnly CephLimitAlert `json:"cephClusterReadOnly,omitempty"`
-	// +optional
-	CephPoolQuotaBytesNearExhaustion CephLimitAlert `json:"cephPoolQuotaBytesNearExhaustion,omitempty"`
-	// +optional
-	CephPoolQuotaBytesCriticallyExhausted CephLimitAlert `json:"cephPoolQuotaBytesCriticallyExhausted,omitempty"`
+	// +kubebuilder:pruning:PreserveUnknownFields
+	AlertRuleOverrides map[string]*CephAlert `json:"alertRuleOverrides,omitempty"`
 }
 
 //CephAlert basic customized alert
@@ -372,25 +317,10 @@ type CephAlert struct {
 	SeverityLevel string `json:"severityLevel,omitempty"`
 	// +optional
 	Severity string `json:"severity,omitempty"`
-}
-
-//CephLimitAlert limit customized alert
-type CephLimitAlert struct {
-	CephAlert `json:",inline"`
-	// +optional
-	Limit int `json:"limit,omitempty"`
-}
-
-//CephNamespacedAlert namespace customized alert
-type CephNamespacedAlert struct {
-	CephAlert `json:",inline"`
 	// +optional
 	Namespace string `json:"namespace,omitempty"`
-}
-
-//CephOsdUpRateAlert osdUpRate customized alert
-type CephOsdUpRateAlert struct {
-	CephLimitAlert `json:",inline"`
+	// +optional
+	Limit int `json:"limit,omitempty"`
 	// +optional
 	OsdUpRate string `json:"osdUpRate,omitempty"`
 }

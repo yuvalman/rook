@@ -1,66 +1,66 @@
-cephMgrIsAbsent:
+CephMgrIsAbsent:
   for: 5m
-  namespace: rook-ceph
+  namespace: ${operatorNamespace}
   severityLevel: critical
   severity: critical
-cephMgrIsMissingReplicas:
+CephMgrIsMissingReplicas:
   for: 5m
   severityLevel: warning
   severity: warning
-cephMdsMissingReplicas:
+CephMdsMissingReplicas:
   for: 5m
   severityLevel: warning
   severity: warning
-cephMonQuorumAtRisk:
+CephMonQuorumAtRisk:
   for: 15m
   severityLevel: error
   severity: critical
-cephMonQuorumLost:
+CephMonQuorumLost:
   for: 5m
   severityLevel: critical
   severity: critical
-cephMonHighNumberOfLeaderChanges:
+CephMonHighNumberOfLeaderChanges:
   limit: 95
   for: 5m
   severityLevel: warning
   severity: warning
-cephNodeDown:
+CephNodeDown:
   for: 30s
   severityLevel: error
   severity: critical
-cephOSDCriticallyFull:
+CephOSDCriticallyFull:
   limit: 80
   for: 40s
   severityLevel: error
   severity: critical
-cephOSDFlapping:
+CephOSDFlapping:
   limit: 10
   osdUpRate: 5m
   for: 0s
   severityLevel: error
   severity: critical
-cephOSDNearFull:
+CephOSDNearFull:
   limit: 75
   for: 40s
   severityLevel: warning
   severity: warning
-cephOSDDiskNotResponding:
+CephOSDDiskNotResponding:
   for: 15m
   severityLevel: error
   severity: critical
-cephOSDDiskUnavailable:
+CephOSDDiskUnavailable:
   for: 1m
   severityLevel: error
   severity: critical
-cephOSDSlowOps:
+CephOSDSlowOps:
   for: 30s
   severityLevel: warning
   severity: warning
-cephDataRecoveryTakingTooLong:
+CephDataRecoveryTakingTooLong:
   for: 2h
   severityLevel: warning
   severity: warning
-cephPGRepairTakingTooLong:
+CephPGRepairTakingTooLong:
   for: 1h
   severityLevel: warning
   severity: warning
@@ -74,43 +74,43 @@ PersistentVolumeUsageCritical:
   for: 5s
   severityLevel: error
   severity: critical
-cephClusterErrorState:
+CephClusterErrorState:
   for: 10m
   severityLevel: error
   severity: critical
-cephClusterWarningState:
+CephClusterWarningState:
   for: 15m
   severityLevel: warning
   severity: warning
-cephOSDVersionMismatch:
+CephOSDVersionMismatch:
   for: 10m
   severityLevel: warning
   severity: warning
-cephMonVersionMismatch:
+CephMonVersionMismatch:
   for: 10m
   severityLevel: warning
   severity: warning
-cephClusterNearFull:
+CephClusterNearFull:
   limit: 75
   for: 5s
   severityLevel: warning
   severity: warning
-cephClusterCriticallyFull:
+CephClusterCriticallyFull:
   limit: 80
   for: 5s
   severityLevel: error
   severity: critical
-cephClusterReadOnly:
+CephClusterReadOnly:
   limit: 85
   for: 0s
   severityLevel: error
   severity: critical
-cephPoolQuotaBytesNearExhaustion:
+CephPoolQuotaBytesNearExhaustion:
   limit: 70
   for: 1m
   severityLevel: warning
   severity: warning
-cephPoolQuotaBytesCriticallyExhausted:
+CephPoolQuotaBytesCriticallyExhausted:
   limit: 90
   for: 1m
   severityLevel: critical

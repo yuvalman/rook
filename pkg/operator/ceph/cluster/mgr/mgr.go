@@ -27,7 +27,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"text/template"
 
@@ -51,10 +50,10 @@ import (
 
 var (
 	logger             = capnslog.NewPackageLogger("github.com/rook/rook", "op-mgr")
-	prometheusRuleName = "prometheus-ceph-vVERSION-rules"
+	prometheusRuleName = "prometheus-ceph-rules"
 
 	// PrometheusExternalRuleName is the name of the prometheus external rule
-	PrometheusExternalRuleName = "prometheus-ceph-vVERSION-rules-external"
+	PrometheusExternalRuleName = "prometheus-ceph-rules-external"
 	monitoringPath             = "/etc/ceph-monitoring/"
 
 	// PrometheusRuleTemplatePath Local package template path for prometheusrule
@@ -478,8 +477,6 @@ func (c *Cluster) EnableServiceMonitor(activeDaemon string) error {
 
 // DeployPrometheusRule deploy prometheusRule that adds alerting and/or recording rules to the cluster
 func (c *Cluster) DeployPrometheusRule(name, namespace string) error {
-	version := strconv.Itoa(c.clusterInfo.CephVersion.Major)
-	name = strings.Replace(name, "VERSION", version, 1)
 	templatePath := PrometheusRuleTemplatePath
 	if strings.Contains(name, "external") {
 		templatePath = PrometheusRuleExternalTemplatePath
@@ -496,6 +493,7 @@ func (c *Cluster) DeployPrometheusRule(name, namespace string) error {
 	}
 	cephv1.GetMonitoringLabels(c.spec.Labels).ApplyToObjectMeta(&prometheusRule.ObjectMeta)
 	if _, err := k8sutil.CreateOrUpdatePrometheusRule(prometheusRule); err != nil {
+		logger.Errorf("prometheusRule: %v", prometheusRule)
 		return errors.Wrap(err, "prometheus rule could not be deployed")
 	}
 	return nil
@@ -518,7 +516,7 @@ func (c *Cluster) templateToPrometheusRule(name, templateData string) (*monitori
 	return &rule, nil
 }
 
-func loadTemplate(name, templateData string, p *cephv1.Alerts) ([]byte, error) {
+func loadTemplate(name, templateData string, p map[string]*cephv1.CephAlert) ([]byte, error) {
 	var writer bytes.Buffer
 	t := template.New(name)
 	t, err := t.Parse(templateData)
@@ -530,24 +528,40 @@ func loadTemplate(name, templateData string, p *cephv1.Alerts) ([]byte, error) {
 }
 
 // computeCustomizedPrometheusAlerts compute Alerts by merging the data that was get from cephcluster spec with the default data
-func (c *Cluster) computeCustomizedPrometheusAlerts() (*cephv1.Alerts, error) {
-	var defaultAlerts cephv1.Alerts
-	fi, err := os.Open(filepath.Clean(path.Join(monitoringPath, defaultPrometheusRuleFile)))
+func (c *Cluster) computeCustomizedPrometheusAlerts() (map[string]*cephv1.CephAlert, error) {
+	defaultAlerts := make(map[string]*cephv1.CephAlert)
+	fi, err := os.ReadFile(filepath.Clean(path.Join(monitoringPath, defaultPrometheusRuleFile)))
 	if err != nil {
 		return nil, err
 	}
-	err = yaml.NewYAMLToJSONDecoder(fi).Decode(&defaultAlerts)
+	fi = []byte(replaceDynamicValues(string(fi)))
+	err = yaml.Unmarshal(fi, &defaultAlerts)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("defaultAlerts before merge:")
+	fmt.Println(defaultAlerts)
 	// merge custom alerts values from with default values (if any)
 	if c.spec.Monitoring.AlertRuleOverrides != nil {
+		fmt.Println("alerts override:")
+		for j, i := range c.spec.Monitoring.AlertRuleOverrides {
+			fmt.Println(j)
+			fmt.Println(i)
+		}
+		fmt.Println(c.spec.Monitoring.AlertRuleOverrides)
 		err = mergo.Merge(&defaultAlerts, c.spec.Monitoring.AlertRuleOverrides, mergo.WithOverride)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return &defaultAlerts, nil
+	fmt.Println("defaultAlerts after merge:")
+	fmt.Println(defaultAlerts)
+	return defaultAlerts, nil
+}
+
+func replaceDynamicValues(f string) string {
+	operatorNamespace := os.Getenv(k8sutil.PodNamespaceEnvVar)
+	return strings.ReplaceAll(f, "${operatorNamespace}", operatorNamespace)
 }
 
 // IsModuleInSpec returns whether a module is present in the CephCluster manager spec

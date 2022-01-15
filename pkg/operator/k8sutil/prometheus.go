@@ -112,6 +112,7 @@ func CreateOrUpdatePrometheusRule(prometheusRule *monitoringv1.PrometheusRule) (
 		return nil, fmt.Errorf("failed to get monitoring client. %v", err)
 	}
 	promRule, err := client.MonitoringV1().PrometheusRules(namespace).Create(ctx, prometheusRule, metav1.CreateOptions{})
+	fmt.Println(promRule)
 	if err != nil {
 		if !kerrors.IsAlreadyExists(err) {
 			return nil, fmt.Errorf("failed to create prometheusRules. %v", err)

@@ -30,7 +30,7 @@ import (
 	"github.com/rook/rook/pkg/clusterd"
 	cephclient "github.com/rook/rook/pkg/daemon/ceph/client"
 	cephver "github.com/rook/rook/pkg/operator/ceph/version"
-
+	"github.com/rook/rook/pkg/operator/k8sutil"
 	testopk8s "github.com/rook/rook/pkg/operator/k8sutil/test"
 	testop "github.com/rook/rook/pkg/operator/test"
 	exectest "github.com/rook/rook/pkg/util/exec/test"
@@ -336,6 +336,8 @@ func TestPrometheusRuleTemplate(t *testing.T) {
 	projectRoot := util.PathToProjectRoot()
 	monitoringPath = path.Join(projectRoot, "cluster/examples/kubernetes/ceph/monitoring/")
 	t.Run("default prometheus rule created successfully from template", func(t *testing.T) {
+		os.Setenv(k8sutil.PodNamespaceEnvVar, "test-ns")
+		defer os.Unsetenv(k8sutil.PodNamespaceEnvVar)
 		pr, err := c.templateToPrometheusRule("name", PrometheusRuleTemplatePath)
 		assert.NoError(t, err)
 		assert.NotNil(t, pr.Spec.Groups)
@@ -346,7 +348,7 @@ func TestPrometheusRuleTemplate(t *testing.T) {
 				for _, r := range g.Rules {
 					if r.Alert == "CephMgrIsAbsent" {
 						assert.Equal(t, r.For, "5m")
-						assert.Contains(t, r.Expr.StrVal, "rook-ceph")
+						assert.Contains(t, r.Expr.StrVal, "test-ns")
 						assert.Equal(t, r.Labels["severity"], "critical")
 					}
 					if r.Alert == "CephMgrIsMissingReplicas" {
@@ -368,13 +370,51 @@ func TestPrometheusRuleTemplate(t *testing.T) {
 		}
 	})
 	t.Run("overwrite prometheus rule created successfully from template", func(t *testing.T) {
-		alertCustomized := cephv1.Alerts{
-			CephMgrIsMissingReplicas: cephv1.CephAlert{Disabled: true, For: "1m"},
-			CephMgrIsAbsent:          cephv1.CephNamespacedAlert{CephAlert: cephv1.CephAlert{For: "1m"}, Namespace: "test-ns"},
-			CephOSDNearFull:          cephv1.CephLimitAlert{Limit: 80},
-			CephOSDFlapping:          cephv1.CephOsdUpRateAlert{OsdUpRate: "10m"},
+		os.Setenv(k8sutil.PodNamespaceEnvVar, "test-ns")
+		defer os.Unsetenv(k8sutil.PodNamespaceEnvVar)
+		alerts := make(map[string]*cephv1.CephAlert)
+		alerts["CephNodeDown"] = &cephv1.CephAlert{Disabled: true, For: "1m"}
+		c.spec.Monitoring.AlertRuleOverrides = alerts
+		pr, err := c.templateToPrometheusRule("name", PrometheusRuleTemplatePath)
+		assert.NoError(t, err)
+		assert.NotNil(t, pr.Spec.Groups)
+		for _, g := range pr.Spec.Groups {
+			assert.NotNil(t, g.Rules)
+			if g.Name == "ceph-mgr-status" {
+				foundAlert := false
+				for _, r := range g.Rules {
+					if r.Alert == "CephMgrIsAbsent" {
+						assert.Equal(t, r.For, "5m")
+						assert.Contains(t, r.Expr.StrVal, "test-ns")
+						assert.Equal(t, r.Labels["severity"], "critical")
+					}
+					if r.Alert == "CephMgrIsMissingReplicas" {
+						foundAlert = true
+					}
+				}
+				assert.Equal(t, foundAlert, true)
+			}
+			if g.Name == "osd-alert.rules" {
+				for _, r := range g.Rules {
+					if r.Alert == "CephOSDNearFull" {
+						assert.Contains(t, r.Expr.StrVal, "0.75")
+					}
+					if r.Alert == "CephOSDFlapping" {
+						assert.Contains(t, r.Expr.StrVal, "[5m]")
+					}
+				}
+			}
 		}
-		c.spec.Monitoring.AlertRuleOverrides = &alertCustomized
+	})
+	t.Run("overwrite prometheus rule created successfully from template", func(t *testing.T) {
+		os.Setenv(k8sutil.PodNamespaceEnvVar, "test-ns")
+		defer os.Unsetenv(k8sutil.PodNamespaceEnvVar)
+		alerts := make(map[string]*cephv1.CephAlert)
+		alerts["CephMgrIsMissingReplicas"] = &cephv1.CephAlert{Disabled: true, For: "1m"}
+		alerts["CephMgrIsAbsent"] = &cephv1.CephAlert{For: "1m"}
+		alerts["CephOSDNearFull"] = &cephv1.CephAlert{Limit: 80}
+		alerts["CephOSDFlapping"] = &cephv1.CephAlert{OsdUpRate: "10m"}
+		c.spec.Monitoring.AlertRuleOverrides = alerts
 		pr, err := c.templateToPrometheusRule("name", PrometheusRuleTemplatePath)
 		assert.NoError(t, err)
 		assert.NotNil(t, pr.Spec.Groups)
@@ -404,7 +444,6 @@ func TestPrometheusRuleTemplate(t *testing.T) {
 					}
 				}
 			}
-
 		}
 	})
 }
